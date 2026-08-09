@@ -11,12 +11,20 @@ export default function SummaryTab() {
     <div className="flex flex-col space-y-6">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-neon">
-          Your Financial Picture
-        </h1>
-        <p className="text-sm text-text-muted mt-2">
-          Real-time overview of your income, spending, and financial health.
-        </p>
+        <MaskedHeading
+          text="Your Financial Picture"
+          tag="h1"
+          reveal="rise"
+          trigger="view"
+          fillColor="var(--color-text)"
+          align="left"
+          className="text-3xl sm:text-4xl font-extrabold tracking-tight"
+        />
+        <Reveal delay={0.15}>
+          <p className="text-sm text-text-muted mt-2">
+            Real-time overview of your income, spending, and financial health.
+          </p>
+        </Reveal>
       </div>
 
       {/* Top Financial Health Scorecard (Net Worth, Cash Flow, Savings Rate, Subscriptions) */}

@@ -21,11 +21,12 @@ const MaskedHeading = ({
   duration = 1.1,
   stagger = 0.09,
   trigger = 'view',
-  align = 'center',
+  align = 'left',
   weight = 700,
   tracking = -0.03,
   lineHeight = 1.06,
-  textScale = 0.115,
+  textScale = null,
+  fillColor = 'var(--color-text)',
   className = '',
   style,
   ...rest
@@ -68,7 +69,9 @@ const MaskedHeading = ({
     if (!root || !measure) return;
     const s = settingsRef.current;
 
-    root.style.fontSize = `${clamp(root.clientWidth * s.textScale, 20, 200).toFixed(1)}px`;
+    if (s.textScale) {
+      root.style.fontSize = `${clamp(root.clientWidth * s.textScale, 16, 200).toFixed(1)}px`;
+    }
 
     const cs = window.getComputedStyle(measure);
     for (let i = 0; i < wordRefs.current.length; i += 1) {
@@ -297,10 +300,14 @@ const MaskedHeading = ({
       <span ref={revealRef} className="masked-heading__reveal">
         <span className="masked-heading__clip" style={{ clipPath: `url(#${clipId})` }}>
           <span ref={mediaRef} className="masked-heading__media">
-            {mediaType === 'video' ? (
-              <video className="masked-heading__source" src={src} poster={poster} autoPlay muted loop playsInline />
+            {src ? (
+              mediaType === 'video' ? (
+                <video className="masked-heading__source" src={src} poster={poster} autoPlay muted loop playsInline />
+              ) : (
+                <img className="masked-heading__source" src={src} alt="" draggable={false} />
+              )
             ) : (
-              <img className="masked-heading__source" src={src} alt="" draggable={false} />
+              <div className="masked-heading__source" style={{ backgroundColor: fillColor || 'var(--color-text)' }} />
             )}
           </span>
         </span>

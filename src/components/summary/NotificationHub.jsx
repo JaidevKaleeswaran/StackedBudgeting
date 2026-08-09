@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatCurrency';
 import CategoryModal from '../home/CategoryModal';
+import MaskedHeading from '../ui/MaskedHeading';
 
 function AlertCard({ alert, onAction }) {
   const configs = {
@@ -232,7 +233,15 @@ export default function NotificationHub() {
             <Bell size={18} />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-neon">Notification Hub</h2>
+            <MaskedHeading
+              text="Notification Hub"
+              tag="h2"
+              reveal="rise"
+              trigger="view"
+              fillColor="var(--color-text)"
+              align="left"
+              className="text-xl font-semibold"
+            />
             <p className="text-xs text-text-muted mt-0.5">Budget alerts, anomalies & insights</p>
           </div>
         </div>

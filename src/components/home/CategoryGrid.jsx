@@ -5,6 +5,7 @@ import CategoryModal from './CategoryModal';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
+import MaskedHeading from '../ui/MaskedHeading';
 
 export default function CategoryGrid() {
   const { categories, categorySpending, totalIncome, dispatch } = useBudget();
@@ -144,7 +145,15 @@ export default function CategoryGrid() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-neon">Category Expenditure</h2>
+        <MaskedHeading
+          text="Category Expenditure"
+          tag="h2"
+          reveal="rise"
+          trigger="view"
+          fillColor="var(--color-text)"
+          align="left"
+          className="text-xl font-semibold"
+        />
         <div className="flex space-x-2 relative">
           <div className="relative">
             <button

@@ -10,6 +10,8 @@ import { processTransaction } from '../../services/agents/managerAgent';
 import { reviewSuspiciousTransaction } from '../../services/agents/assistantAgent';
 import toast from 'react-hot-toast'
 import { Plus, Edit2, Sparkles, Receipt, Volume2, VolumeX, Mic, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
+import MaskedHeading from '../ui/MaskedHeading';
+import Reveal from '../ui/Reveal';
 
 export default function TransactionsTab() {
   const budgetState = useBudget();
@@ -141,7 +143,15 @@ export default function TransactionsTab() {
   return (
     <Card className="min-h-[500px] space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold text-neon">Expenses</h2>
+        <MaskedHeading
+          text="Expenses"
+          tag="h2"
+          reveal="rise"
+          trigger="view"
+          fillColor="var(--color-text)"
+          align="left"
+          className="text-xl font-semibold"
+        />
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowVoicePanel(!showVoicePanel)}

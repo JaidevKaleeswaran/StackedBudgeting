@@ -60,10 +60,7 @@
    Usage: className="text-neon"
 */
 .text-neon {
-  background: linear-gradient(135deg, #e7b956 0%, #2e5b45 50%, #8c6d37 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-text);
   display: inline-block;
 }
 
