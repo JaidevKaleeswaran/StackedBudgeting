@@ -29,7 +29,7 @@ export default function Logo({ size = 'md', className = '' }) {
       {/* Brand Name & Subtitle */}
       <div className="flex flex-col justify-center leading-none">
         <span className={`font-extrabold text-white tracking-tight ${titleText} font-sans`}>
-          stacked
+          Stacked
         </span>
         <span className={`font-semibold text-zinc-400 uppercase mt-1 ${subText} font-sans`}>
           BUDGETING
