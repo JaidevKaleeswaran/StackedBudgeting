@@ -1,26 +1,39 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getAnalytics, isSupported } from 'firebase/analytics';
+import { env } from './env';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyACScT2FX33Et8KB9Mqt4x1-5aJdkSq2lE',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'myvault-rho.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'myvault-rho',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'myvault-rho.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '525675241889',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:525675241889:web:e8e84462765c456ff56be0',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-KJDZS6JEYM'
+  apiKey: env.firebase.apiKey || 'AIzaSyByjWIGx6KvOUQHbW5w3jxkwL9sMP1B9_0',
+  authDomain: env.firebase.authDomain || 'stacked-budgeting.firebaseapp.com',
+  projectId: env.firebase.projectId || 'stacked-budgeting',
+  storageBucket: env.firebase.storageBucket || 'stacked-budgeting.firebasestorage.app',
+  messagingSenderId: env.firebase.messagingSenderId || '127464127687',
+  appId: env.firebase.appId || '1:127464127687:web:99d6d733675c3d410f92e2',
+  measurementId: env.firebase.measurementId || 'G-1KDBCK65VF'
 };
 
 console.log("Firebase config loaded:", firebaseConfig);
 
 // Initialize Firebase
-let app, auth, db;
+let app = null;
+let auth = null;
+let db = null;
+let analytics = null;
 
 if (firebaseConfig.apiKey) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+
+  if (typeof window !== 'undefined') {
+    isSupported().then((supported) => {
+      if (supported) {
+        analytics = getAnalytics(app);
+      }
+    }).catch((err) => console.warn('Firebase Analytics check error:', err));
+  }
 }
 
-export { auth, db };
+export { app, auth, db, analytics };

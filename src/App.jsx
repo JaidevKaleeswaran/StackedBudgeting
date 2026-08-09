@@ -11,7 +11,7 @@ import { useCycleCheck } from './hooks/useCycleCheck';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LogOut } from 'lucide-react';
-import Beams from './components/ui/Beams';
+
 
 function MainApp() {
   useCycleCheck();
@@ -21,40 +21,6 @@ function MainApp() {
 
   return (
     <>
-      {/* ── Global Beams background — persists across all pages/tabs ── */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 0,
-        }}
-      >
-        <Suspense fallback={null}>
-          <Beams
-            beamWidth={6}
-            beamHeight={45}
-            beamNumber={24}
-            lightColor="#e7b956"
-            speed={1.5}
-            noiseIntensity={1.6}
-            scale={0.18}
-            rotation={0}
-          />
-        </Suspense>
-      </div>
-
-      {/* Subtle dark tint between Beams and content */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 1,
-          background: 'rgba(22,22,20,0.55)',
-          pointerEvents: 'none',
-        }}
-      />
 
       {/* ── All page content sits above the Beams ── */}
       <div style={{ position: 'relative', zIndex: 2 }} className="min-h-screen text-text font-sans selection:bg-accent selection:text-primary">
