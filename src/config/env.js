@@ -20,6 +20,7 @@ export const env = {
 
   // Gemini AI Keys
   gemini: {
+    sttApiKey: import.meta.env.VITE_STT_API_KEY || import.meta.env.VITE_ASSISTANT_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '',
     assistantApiKey: import.meta.env.VITE_ASSISTANT_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '',
     managerApiKey: import.meta.env.VITE_MANAGER_API_KEY || import.meta.env.VITE_ASSISTANT_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '',
     receiptScannerApiKey: import.meta.env.VITE_RECEIPT_SCANNER_API_KEY || import.meta.env.VITE_MANAGER_API_KEY || import.meta.env.VITE_ASSISTANT_API_KEY || '',

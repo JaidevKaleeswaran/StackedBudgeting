@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, Send, Download, FileText,
-  RefreshCw, Mic, Camera, X,
+  RefreshCw, Mic, MicOff, Camera, X,
   Brain, Zap, ChevronDown, ChevronUp, Bot, User, Volume2, ShieldCheck
 } from 'lucide-react';
+import { GoogleGenAI } from '@google/genai';
 import { answerQuery, clearConversationHistory } from '../../services/agents/assistantAgent';
 import { buildFinancialSnapshot, processTransaction } from '../../services/agents/managerAgent';
+import { createWebSpeechRecognition } from '../../services/agents/voiceAgent';
 import { useBudget } from '../../contexts/BudgetContext';
 import { useAuth } from '../../contexts/AuthContext';
 import VoiceInputPanel from './VoiceInputPanel';
@@ -146,7 +148,150 @@ export default function AIAssistantTab() {
   const [showVoicePanel, setShowVoicePanel] = useState(false);
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [showVoiceAuditLog, setShowVoiceAuditLog] = useState(false);
+  const [isVoicePrompting, setIsVoicePrompting] = useState(false);
+  const [isTranscribingPrompt, setIsTranscribingPrompt] = useState(false);
+
   const chatEndRef = useRef(null);
+  const promptMediaRecorderRef = useRef(null);
+  const promptAudioChunksRef = useRef([]);
+  const promptRecognitionRef = useRef(null);
+
+  const handleStartPromptVoice = async () => {
+    setIsVoicePrompting(true);
+    promptAudioChunksRef.current = [];
+
+    // 1. Web Speech API for real-time live typing feedback
+    try {
+      const recognition = createWebSpeechRecognition(
+        (text, isFinal) => {
+          if (text) {
+            setInputQuery(text);
+          }
+        },
+        (err) => {
+          console.warn('[AI Prompt Voice] WebSpeech event warning:', err);
+        },
+        () => {}
+      );
+      if (recognition) {
+        promptRecognitionRef.current = recognition;
+        recognition.start();
+      }
+    } catch (_) {}
+
+    // 2. Native MediaRecorder for full audio recording + Gemini transcription
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      promptMediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          promptAudioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(promptAudioChunksRef.current, { type: mimeType });
+        await handleTranscribeAndPromptAI(audioBlob);
+      };
+
+      mediaRecorder.start(100);
+    } catch (err) {
+      console.warn('[AI Prompt Voice] Mic access error:', err);
+      setIsVoicePrompting(false);
+      toast.error('Microphone permission denied or not available. Please allow mic access or type below.');
+    }
+  };
+
+  const handleStopPromptVoice = () => {
+    setIsVoicePrompting(false);
+
+    if (promptRecognitionRef.current) {
+      try { promptRecognitionRef.current.stop(); } catch (_) {}
+    }
+
+    if (promptMediaRecorderRef.current && promptMediaRecorderRef.current.state !== 'inactive') {
+      try {
+        promptMediaRecorderRef.current.requestData();
+        promptMediaRecorderRef.current.stop();
+      } catch (_) {}
+    }
+  };
+
+  const handleTranscribeAndPromptAI = async (audioBlob) => {
+    let capturedText = '';
+
+    if (audioBlob && audioBlob.size > 100) {
+      setIsTranscribingPrompt(true);
+      try {
+        const apiKeys = [
+          import.meta.env.VITE_STT_API_KEY,
+          import.meta.env.VITE_ASSISTANT_API_KEY,
+          import.meta.env.VITE_MANAGER_API_KEY,
+          import.meta.env.VITE_RECEIPT_SCANNER_API_KEY,
+          import.meta.env.VITE_GEMINI_API_KEY,
+        ].filter(Boolean);
+
+        if (apiKeys.length > 0) {
+          const base64Audio = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(audioBlob);
+          });
+
+          const mimeType = (audioBlob.type || 'audio/webm').split(';')[0];
+          const prompt = "Transcribe this spoken question into plain text. Return ONLY the transcribed text, with no JSON, commentary, quotes, or markdown formatting.";
+
+          for (const apiKey of apiKeys) {
+            const ai = new GoogleGenAI({ apiKey });
+            for (const model of ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-2.0-flash']) {
+              try {
+                const response = await ai.models.generateContent({
+                  model,
+                  contents: [{
+                    role: 'user',
+                    parts: [
+                      { text: prompt },
+                      { inlineData: { mimeType, data: base64Audio } },
+                    ],
+                  }],
+                });
+                const resText = (response.text || '').trim();
+                if (resText) {
+                  capturedText = resText;
+                  break;
+                }
+              } catch (mErr) {
+                console.warn(`[Voice Prompt] Gemini model ${model} error:`, mErr.message);
+              }
+            }
+            if (capturedText) break;
+          }
+        }
+      } catch (err) {
+        console.warn('[Voice Prompt] Audio transcription error:', err);
+      } finally {
+        setIsTranscribingPrompt(false);
+      }
+    }
+
+    // Fallback to WebSpeech live text if Gemini audio transcription didn't return text
+    if (!capturedText && inputQuery.trim()) {
+      capturedText = inputQuery.trim();
+    }
+
+    if (capturedText) {
+      setInputQuery(capturedText);
+      toast.success('Voice prompt transcribed!');
+      handleSendQuery(capturedText);
+    } else {
+      toast.error('Could not transcribe audio. Please try speaking again or type your question.');
+    }
+  };
 
   // Build financial snapshot for the AI Assistant
   const financialSnapshot = buildFinancialSnapshot(budgetState);
@@ -477,17 +622,52 @@ export default function AIAssistantTab() {
           </div>
         )}
 
+        {/* Voice Prompt Recording Status Banner */}
+        {isVoicePrompting && (
+          <div className="mt-3 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center justify-between animate-pulse">
+            <div className="flex items-center space-x-2 text-xs text-red-400">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              <span className="font-medium">Recording voice prompt... Speak your question into the mic.</span>
+            </div>
+            <button
+              onClick={handleStopPromptVoice}
+              className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-300 px-2.5 py-1 rounded-lg transition-colors font-medium"
+            >
+              Done / Send
+            </button>
+          </div>
+        )}
+
+        {isTranscribingPrompt && (
+          <div className="mt-3 px-3 py-2 bg-accent/10 border border-accent/30 rounded-xl flex items-center space-x-2 text-xs text-accent">
+            <RefreshCw size={14} className="animate-spin text-accent" />
+            <span className="font-medium">Converting voice to text & prompting AI assistant...</span>
+          </div>
+        )}
+
         {/* Input Bar */}
         <div className="mt-4 pt-3 border-t border-border flex items-center space-x-2">
+          {/* Voice prompt mic button */}
           <button
-            onClick={() => setShowVoicePanel(!showVoicePanel)}
-            className={`p-3 rounded-xl transition-colors border ${showVoicePanel
-                ? 'bg-accent/20 text-accent border-accent/40'
+            type="button"
+            onClick={isVoicePrompting ? handleStopPromptVoice : handleStartPromptVoice}
+            disabled={isProcessing || isTranscribingPrompt}
+            className={`p-3 rounded-xl transition-all border ${
+              isVoicePrompting
+                ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-lg shadow-red-500/20 animate-pulse scale-105'
+                : isTranscribingPrompt
+                ? 'bg-accent/20 text-accent border-accent/40 opacity-80'
                 : 'bg-primary text-text-muted hover:text-accent hover:bg-accent/10 border-border'
-              }`}
-            title="Voice Receipt"
+            }`}
+            title={isVoicePrompting ? 'Stop recording & send prompt' : 'Speak prompt to AI Assistant'}
           >
-            <Mic size={18} />
+            {isTranscribingPrompt ? (
+              <RefreshCw size={18} className="animate-spin text-accent" />
+            ) : isVoicePrompting ? (
+              <MicOff size={18} />
+            ) : (
+              <Mic size={18} />
+            )}
           </button>
 
           <input
@@ -495,14 +675,26 @@ export default function AIAssistantTab() {
             value={inputQuery}
             onChange={(e) => setInputQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendQuery()}
-            placeholder="Ask about your spending, budget, income, or anything financial..."
+            placeholder={
+              isVoicePrompting
+                ? 'Listening to your question... speak now'
+                : isTranscribingPrompt
+                ? 'Transcribing your voice prompt...'
+                : 'Ask about your spending, budget, income, or anything financial...'
+            }
+            disabled={isTranscribingPrompt}
             className="flex-1 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 focus:border-accent text-text placeholder-zinc-500 text-sm rounded-xl px-4 py-3 focus:outline-none transition-colors"
           />
 
           <button
-            onClick={() => handleSendQuery()}
-            disabled={!inputQuery.trim() || isProcessing}
+            type="button"
+            onClick={() => {
+              if (isVoicePrompting) handleStopPromptVoice();
+              else handleSendQuery();
+            }}
+            disabled={(!inputQuery.trim() && !isVoicePrompting) || isProcessing || isTranscribingPrompt}
             className="bg-accent hover:bg-accent-hover text-primary p-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            title="Send prompt to AI"
           >
             <Send size={18} />
           </button>

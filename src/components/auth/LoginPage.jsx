@@ -4,6 +4,8 @@ import { Card } from '../ui/Card';
 import toast from 'react-hot-toast';
 import { Lock, Mail, User, ArrowRight, ShieldCheck } from 'lucide-react';
 
+import Logo from '../ui/Logo';
+
 export default function LoginPage() {
   const { loginWithEmail, signupWithEmail, loginWithGoogle, loginAsGuest } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -75,14 +77,9 @@ export default function LoginPage() {
 
       {/* ── Login card ── */}
       <div className="w-full max-w-md relative" style={{ zIndex: 2 }}>
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 mb-4 text-accent backdrop-blur-sm">
-            <ShieldCheck size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight drop-shadow-lg">
-            Stack<span className="text-accent">ed</span>
-          </h1>
-          <p className="text-zinc-400 mt-2 text-sm">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Logo size="lg" className="mb-3" />
+          <p className="text-zinc-400 mt-1 text-sm">
             {isSignUp ? 'Create your budget account' : 'Sign in to access your financial dashboard'}
           </p>
         </div>

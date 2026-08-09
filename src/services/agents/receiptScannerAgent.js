@@ -83,7 +83,7 @@ export async function scanReceipt(imageFile) {
   const base64Image = await fileToBase64(imageFile);
   const mimeType = imageFile.type;
 
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-2.0-flash'];
   let lastError = null;
 
   for (const model of modelsToTry) {

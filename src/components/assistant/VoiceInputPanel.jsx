@@ -100,6 +100,7 @@ export default function VoiceInputPanel({ onTransactionReady, onClose }) {
     try {
       // Collect available keys, prioritizing verified working keys
       const apiKeys = [
+        import.meta.env.VITE_STT_API_KEY,
         import.meta.env.VITE_RECEIPT_SCANNER_API_KEY,
         import.meta.env.VITE_MANAGER_API_KEY,
         import.meta.env.VITE_ASSISTANT_API_KEY,
@@ -135,7 +136,7 @@ Return ONLY valid JSON (no markdown formatting) in this exact structure:
 
 If the year/date is not mentioned, use today's date (${new Date().toISOString().split('T')[0]}).`;
 
-      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+      const modelsToTry = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-2.0-flash'];
 
       // Try keys and models
       for (const apiKey of apiKeys) {

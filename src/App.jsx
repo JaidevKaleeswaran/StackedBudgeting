@@ -13,6 +13,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LogOut } from 'lucide-react';
 
 
+import Logo from './components/ui/Logo';
+
 function MainApp() {
   useCycleCheck();
   useFirebaseSync();
@@ -32,9 +34,7 @@ function MainApp() {
           <>
             <header className="py-3 px-4 sm:px-6 border-b border-border/60 flex items-center justify-between max-w-6xl mx-auto backdrop-blur-md bg-[#161614]/40">
               <div className="flex items-center space-x-2 shrink-0">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text">
-                  Stack<span className="text-accent">ed</span>
-                </h1>
+                <Logo size="md" />
               </div>
 
               <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
