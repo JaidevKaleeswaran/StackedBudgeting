@@ -6,9 +6,9 @@ import { env } from './env';
 
 const firebaseConfig = {
   apiKey: env.firebase.apiKey || 'AIzaSyByjWIGx6KvOUQHbW5w3jxkwL9sMP1B9_0',
-  authDomain: env.firebase.authDomain || 'stacked-budgeting.firebaseapp.com',
-  projectId: env.firebase.projectId || 'stacked-budgeting',
-  storageBucket: env.firebase.storageBucket || 'stacked-budgeting.firebasestorage.app',
+  authDomain: env.firebase.authDomain || 'arca-budgeting.firebaseapp.com',
+  projectId: env.firebase.projectId || 'arca-budgeting',
+  storageBucket: env.firebase.storageBucket || 'arca-budgeting.firebasestorage.app',
   messagingSenderId: env.firebase.messagingSenderId || '127464127687',
   appId: env.firebase.appId || '1:127464127687:web:99d6d733675c3d410f92e2',
   measurementId: env.firebase.measurementId || 'G-1KDBCK65VF'

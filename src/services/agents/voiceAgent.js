@@ -17,7 +17,7 @@ const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
  * - How much they spent (amount)
  * - When they bought it (date)
  */
-export const VOICE_AGENT_PROMPT = `You are a friendly receipt recording assistant for the Stacked personal finance app. Your job is to listen to the user describe their purchases and extract the key details.
+export const VOICE_AGENT_PROMPT = `You are a friendly receipt recording assistant for the ARCA personal finance app. Your job is to listen to the user describe their purchases and extract the key details.
 
 When the user tells you about a purchase, extract:
 1. WHAT they bought or WHERE they bought it (the merchant/store name or description)

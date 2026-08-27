@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Logo — Official Stacked Budgeting brand logo component
+ * Logo — Official ARCA Budgeting brand logo component
  * Matches exact design: 3 stacked gold/bronze pill bars mark + lowercase 'stacked' + uppercase 'BUDGETING'
  */
 export default function Logo({ size = 'md', className = '' }) {
@@ -14,7 +14,7 @@ export default function Logo({ size = 'md', className = '' }) {
 
   return (
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
-      {/* 3 Stacked Gold/Bronze Pill Bars Mark */}
+      {/* 3 ARCA Gold/Bronze Pill Bars Mark */}
       <svg
         viewBox="0 0 36 44"
         fill="none"
@@ -29,7 +29,7 @@ export default function Logo({ size = 'md', className = '' }) {
       {/* Brand Name & Subtitle */}
       <div className="flex flex-col justify-center leading-none">
         <span className={`font-extrabold text-white tracking-tight ${titleText} font-sans`}>
-          Stacked
+          ARCA
         </span>
         <span className={`font-semibold text-zinc-400 uppercase mt-1 ${subText} font-sans`}>
           BUDGETING

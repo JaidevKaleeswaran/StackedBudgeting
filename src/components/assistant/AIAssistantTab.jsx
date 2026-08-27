@@ -306,7 +306,7 @@ export default function AIAssistantTab() {
           sender: 'assistant',
           source: 'assistant',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          text: `Hello ${user?.displayName || 'there'}! I'm your AI Financial Assistant.\n\nI have direct access to all your Stacked data — **${budgetState.transactions?.length || 0} transactions**, **${budgetState.categories?.length || 0} budget categories**, and **${budgetState.incomeSources?.length || 0} income sources**.\n\n**Three ways to interact:**\n• **Type** a question about your finances\n• **Speak** a receipt using ElevenLabs AI Voice\n• **Scan** a receipt photo with Vision AI\n\nAll data is processed in real-time. Ask me anything!`,
+          text: `Hello ${user?.displayName || 'there'}! I'm your AI Financial Assistant.\n\nI have direct access to all your ARCA data — **${budgetState.transactions?.length || 0} transactions**, **${budgetState.categories?.length || 0} budget categories**, and **${budgetState.incomeSources?.length || 0} income sources**.\n\n**Three ways to interact:**\n• **Type** a question about your finances\n• **Speak** a receipt using ElevenLabs AI Voice\n• **Scan** a receipt photo with Vision AI\n\nAll data is processed in real-time. Ask me anything!`,
         }
       });
     }
@@ -436,7 +436,7 @@ export default function AIAssistantTab() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'Stacked_Expenses_Export.csv');
+    link.setAttribute('download', 'ARCA_Expenses_Export.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

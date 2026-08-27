@@ -44,7 +44,7 @@ export default function LoginPage() {
         }
       } else {
         await loginWithEmail(formData.email, formData.password);
-        toast.success('Welcome back to Stacked!');
+        toast.success('Welcome back to ARCA!');
       }
     } catch (err) {
       console.error(err);

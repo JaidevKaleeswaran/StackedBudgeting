@@ -14,7 +14,7 @@ export default function VerifyEmailPage() {
     try {
       const isVerified = await refreshUserStatus();
       if (isVerified) {
-        toast.success('Email verified successfully! Welcome to Stacked.');
+        toast.success('Email verified successfully! Welcome to ARCA.');
       } else {
         toast.error('Email not verified yet. Please check your inbox and click the link.');
       }
@@ -62,7 +62,7 @@ export default function VerifyEmailPage() {
             </div>
             <ol className="list-decimal list-inside text-xs text-zinc-400 space-y-1.5 pl-1">
               <li>Open your email inbox for <strong className="text-zinc-200">{user?.email}</strong></li>
-              <li>Click the activation link inside the email from <strong>Stacked / Firebase</strong></li>
+              <li>Click the activation link inside the email from <strong>ARCA / Firebase</strong></li>
               <li>Return here and click <strong>"I've Activated My Account"</strong></li>
             </ol>
           </div>

@@ -1,8 +1,8 @@
 import React, { createContext, useReducer, useContext, useEffect } from 'react';
 import { normalizeToMasterCycle, getCycleWindow, isWithinCycle } from '../utils/cycleUtils';
 
-const STORAGE_KEY = 'stacked_budget_state';
-const LEGACY_STORAGE_KEY = 'myvault_budget_state';
+const STORAGE_KEY = 'arca_budget_state';
+const LEGACY_STORAGE_KEY = 'stacked_budget_state';
 
 // Default fallback state
 const defaultState = {

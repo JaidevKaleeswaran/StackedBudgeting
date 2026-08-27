@@ -4,7 +4,7 @@ import { parseSpokenReceipt, createWebSpeechRecognition, speakTransactionDetails
 import { GoogleGenAI } from '@google/genai';
 
 /**
- * VoiceInputPanel — Stacked Dual Voice & Text Receipt Input Agent
+ * VoiceInputPanel — ARCA Dual Voice & Text Receipt Input Agent
  * 
  * Supports:
  * 1. Direct audio recording via MediaRecorder -> Gemini 2.5 Flash transcription (100% reliable across all browsers & HTTPS/HTTP)
