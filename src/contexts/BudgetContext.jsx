@@ -192,9 +192,11 @@ function budgetReducer(state, action) {
     case 'SET_FULL_STATE':
       return sanitizeState({
         ...action.payload,
-        voiceLogs: action.payload.voiceLogs || state.voiceLogs || [],
-        chatMessages: action.payload.chatMessages || state.chatMessages || [],
+        voiceLogs: action.payload.voiceLogs || state?.voiceLogs || [],
+        chatMessages: action.payload.chatMessages || state?.chatMessages || [],
       });
+    case 'RESET_STATE':
+      return sanitizeState(defaultState);
 
     default:
       return state;
