@@ -332,26 +332,33 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    if (auth && auth.currentUser) {
-      const currentUid = auth.currentUser.uid;
+    const currentUser = auth?.currentUser;
+    const currentUid = currentUser?.uid || user?.uid;
+
+    if (currentUid && !user?.isGuest && db) {
       try {
         const userStorageKey = `arca_budget_state_${currentUid}`;
         const saved = localStorage.getItem(userStorageKey) || localStorage.getItem('arca_budget_state');
-        if (saved && db) {
+        if (saved) {
           const parsed = JSON.parse(saved);
           const docRef = doc(db, 'users', currentUid, 'budgetData', 'main');
-          await setDoc(docRef, { ...parsed, updatedAt: new Date().toISOString() }, { merge: true });
-          console.log("Budget data successfully flushed to Firestore before sign-out for user:", currentUid);
+          const savePromise = setDoc(docRef, { ...parsed, updatedAt: new Date().toISOString() }, { merge: true });
+          const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 800));
+          await Promise.race([savePromise, timeoutPromise]);
         }
       } catch (e) {
         console.warn("Pre-logout save error:", e);
       }
+    }
+
+    if (auth) {
       try {
         await firebaseSignOut(auth);
       } catch (e) {
         console.error('Firebase signout error', e);
       }
     }
+
     setUser(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
