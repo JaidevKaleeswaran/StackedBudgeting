@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
@@ -15,6 +17,56 @@ const AuthContext = createContext();
 
 const STORAGE_KEY = 'arca_user_session';
 const LEGACY_STORAGE_KEY = 'stacked_user_session';
+
+function formatAuthError(error) {
+  if (!error) return new Error('Authentication failed. Please try again.');
+  
+  switch (error.code) {
+    case 'auth/unauthorized-continue-uri':
+      return new Error(`The domain (${window.location.origin}) is not allowlisted as a return URL in Firebase Console. Please add it to Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+    case 'auth/operation-not-allowed':
+      return new Error('Google Sign-in is not enabled in your Firebase Console project. Please enable Google Auth under Firebase Console -> Authentication -> Sign-in method.');
+    case 'auth/unauthorized-domain':
+      return new Error(`This domain (${window.location.hostname}) is not authorized for Google Sign-in. Please add it to Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+    case 'auth/popup-blocked':
+      return new Error('Sign-in popup was blocked by your browser. Please allow popups or try again.');
+    case 'auth/popup-closed-by-user':
+      return new Error('Sign-in window was closed before completing authentication.');
+    case 'auth/cancelled-popup-request':
+      return new Error('Sign-in request was cancelled. Please try again.');
+    case 'auth/network-request-failed':
+      return new Error('Network error during Google Sign-in. Please check your internet connection.');
+    case 'auth/too-many-requests':
+      return new Error('Too many requests. Please wait a moment before trying again.');
+    case 'auth/invalid-api-key':
+    case 'auth/api-key-not-valid-please-pass-a-valid-api-key':
+      return new Error('Invalid Firebase API Key. Please check your .env.local configuration.');
+    default:
+      return new Error(error.message || 'Authentication failed. Please try again.');
+  }
+}
+
+const safeSendEmailVerification = async (firebaseUser) => {
+  if (!firebaseUser) return;
+  try {
+    const actionCodeSettings = {
+      url: window.location.origin,
+      handleCodeInApp: true,
+    };
+    await sendEmailVerification(firebaseUser, actionCodeSettings);
+  } catch (err) {
+    if (
+      err.code === 'auth/unauthorized-continue-uri' ||
+      err.code === 'auth/invalid-continue-uri' ||
+      err.message?.includes('unauthorized-continue-uri')
+    ) {
+      console.warn(`Custom continue URI (${window.location.origin}) not allowlisted in Firebase Console. Falling back to default Firebase verification URL...`);
+      await sendEmailVerification(firebaseUser);
+    } else {
+      throw err;
+    }
+  }
+};
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -47,6 +99,28 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (auth) {
+      // Check for Google redirect result on page load
+      getRedirectResult(auth)
+        .then((result) => {
+          if (result && result.user) {
+            const userData = {
+              uid: result.user.uid,
+              email: result.user.email,
+              displayName: result.user.displayName || (result.user.email ? result.user.email.split('@')[0] : 'Google User'),
+              photoURL: result.user.photoURL || null,
+              emailVerified: result.user.emailVerified,
+              isGuest: false,
+            };
+            setUser(userData);
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+            } catch (e) { }
+          }
+        })
+        .catch((err) => {
+          console.error('Firebase getRedirectResult error:', err);
+        });
+
       const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
         if (firebaseUser) {
           const userData = {
@@ -80,11 +154,7 @@ export function AuthProvider({ children }) {
       if (!cred.user.emailVerified) {
         // Attempt to resend activation link if unverified
         try {
-          const actionCodeSettings = {
-            url: window.location.origin,
-            handleCodeInApp: true,
-          };
-          await sendEmailVerification(cred.user, actionCodeSettings);
+          await safeSendEmailVerification(cred.user);
         } catch (e) {
           console.error('Could not auto-resend verification email', e);
         }
@@ -135,17 +205,12 @@ export function AuthProvider({ children }) {
         }
       }
 
-      // Send verification/activation email to user with ActionCodeSettings
-      const actionCodeSettings = {
-        url: window.location.origin,
-        handleCodeInApp: true,
-      };
-
+      // Send verification/activation email to user safely
       try {
-        await sendEmailVerification(cred.user, actionCodeSettings);
+        await safeSendEmailVerification(cred.user);
       } catch (e) {
         console.error('Failed to send verification email:', e);
-        throw new Error(`Account created, but activation email failed to send: ${e.message}`);
+        throw formatAuthError(e);
       }
 
       // Immediately sign out so user cannot access until email activation link is clicked
@@ -172,18 +237,39 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = async () => {
     if (auth) {
       const provider = new GoogleAuthProvider();
-      const cred = await signInWithPopup(auth, provider);
-      const userData = {
-        uid: cred.user.uid,
-        email: cred.user.email,
-        displayName: cred.user.displayName,
-        photoURL: cred.user.photoURL,
-        emailVerified: cred.user.emailVerified,
-        isGuest: false,
-      };
-      setUser(userData);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-      return userData;
+      try {
+        const cred = await signInWithPopup(auth, provider);
+        const userData = {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: cred.user.displayName || (cred.user.email ? cred.user.email.split('@')[0] : 'Google User'),
+          photoURL: cred.user.photoURL || null,
+          emailVerified: cred.user.emailVerified,
+          isGuest: false,
+        };
+        setUser(userData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+        return userData;
+      } catch (popupError) {
+        console.warn('Google Popup auth failed/blocked, checking fallback:', popupError.code, popupError.message);
+        
+        // If popup was blocked or closed by popup policy, fall back to redirect sign-in
+        if (
+          popupError.code === 'auth/popup-blocked' ||
+          popupError.code === 'auth/popup-closed-by-user' ||
+          popupError.code === 'auth/cancelled-popup-request'
+        ) {
+          try {
+            await signInWithRedirect(auth, provider);
+            return { redirecting: true };
+          } catch (redirectError) {
+            console.error('Google Redirect auth error:', redirectError);
+            throw formatAuthError(redirectError);
+          }
+        }
+        
+        throw formatAuthError(popupError);
+      }
     } else {
       const userData = {
         uid: 'google_user_' + Date.now(),
@@ -215,11 +301,12 @@ export function AuthProvider({ children }) {
 
   const resendVerificationEmail = async () => {
     if (auth && auth.currentUser) {
-      const actionCodeSettings = {
-        url: window.location.origin,
-        handleCodeInApp: true,
-      };
-      await sendEmailVerification(auth.currentUser, actionCodeSettings);
+      try {
+        await safeSendEmailVerification(auth.currentUser);
+      } catch (e) {
+        console.error('Failed to resend verification email:', e);
+        throw formatAuthError(e);
+      }
     }
   };
 

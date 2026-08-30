@@ -57,11 +57,15 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      await loginWithGoogle();
-      toast.success('Logged in with Google!');
+      const res = await loginWithGoogle();
+      if (res?.redirecting) {
+        toast.loading('Redirecting to Google for sign-in...', { duration: 4000 });
+      } else {
+        toast.success('Logged in with Google!');
+      }
     } catch (err) {
-      console.error(err);
-      toast.error('Google Sign-in failed');
+      console.error('Google Auth Error:', err);
+      toast.error(err.message || 'Google Sign-in failed', { duration: 7000 });
     } finally {
       setLoading(false);
     }
