@@ -9,7 +9,7 @@ import { speakTransactionDetails, stopSpeech } from '../../services/agents/voice
 import { processTransaction } from '../../services/agents/managerAgent';
 import { reviewSuspiciousTransaction } from '../../services/agents/assistantAgent';
 import toast from 'react-hot-toast'
-import { Plus, Edit2, Sparkles, Receipt, Volume2, VolumeX, Mic, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Sparkles, Receipt, Volume2, VolumeX, Mic, Loader2, RefreshCw, AlertTriangle, Repeat } from 'lucide-react';
 import MaskedHeading from '../ui/MaskedHeading';
 import Reveal from '../ui/Reveal';
 
@@ -81,7 +81,6 @@ export default function TransactionsTab() {
       const result = await reviewSuspiciousTransaction(tx, snapshot);
       toast(result.verdict, {
         duration: 6000,
-        icon: result.isSuspicious ? '⚠️' : '✅',
         style: {
           background: result.isSuspicious ? 'rgba(234,88,12,0.15)' : 'rgba(16,185,129,0.1)',
           borderColor: result.isSuspicious ? 'rgba(234,88,12,0.3)' : 'rgba(16,185,129,0.3)',
@@ -238,7 +237,7 @@ export default function TransactionsTab() {
                           title="Recurring subscription"
                           className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-[#2e5b45]/15 text-[#3a7056] border border-[#2e5b45]/30"
                         >
-                          🔄 Sub
+                          <Repeat size={10} className="mr-1" /> Sub
                         </span>
                       )}
                       {isSuspicious && (

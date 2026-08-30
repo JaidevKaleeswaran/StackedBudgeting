@@ -257,8 +257,8 @@ export default function NotificationHub() {
             </span>
           )}
           {alerts.length === 0 && (
-            <span className="bg-[#2e5b45]/20 text-[#3a7056] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#2e5b45]/30">
-              All Clear ✓
+            <span className="bg-[#2e5b45]/20 text-[#3a7056] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#2e5b45]/30 flex items-center gap-1">
+              <CheckCircle2 size={12} /> All Clear
             </span>
           )}
         </div>

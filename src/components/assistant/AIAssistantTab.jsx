@@ -119,7 +119,7 @@ function AgentPipelineBadge({ source, metrics }) {
           {metrics.dataPointsUsed !== undefined && <span className="block">Data points: {metrics.dataPointsUsed}</span>}
           {metrics.categoriesAnalyzed !== undefined && <span className="block">Categories analyzed: {metrics.categoriesAnalyzed}</span>}
           {metrics.latencyMs && <span className="block">Response time: {metrics.latencyMs}ms</span>}
-          {metrics.fallback && <span className="block text-amber-400">⚡ Fallback mode (offline)</span>}
+          {metrics.fallback && <span className="block text-amber-400"><Zap size={10} className="inline mr-1 text-amber-400" />Fallback mode (offline)</span>}
         </div>
       )}
     </div>

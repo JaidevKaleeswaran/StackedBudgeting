@@ -252,7 +252,7 @@ export default function ReceiptScannerModal({ isOpen, onClose }) {
 
             {scanResult._scanIssues?.length > 0 && (
               <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-400">
-                <span className="mt-0.5 shrink-0">⚠️</span>
+                <AlertCircle size={14} className="mt-0.5 shrink-0 text-amber-400" />
                 <span>Low confidence on: <strong>{scanResult._scanIssues.join(', ')}</strong> — please verify these fields before saving.</span>
               </div>
             )}
@@ -281,7 +281,7 @@ export default function ReceiptScannerModal({ isOpen, onClose }) {
 
             <div>
               <label className={`block text-sm mb-1 ${scanResult._scanIssues?.includes('merchant') ? 'text-amber-400' : 'text-text-muted'}`}>
-                Description (Merchant){scanResult._scanIssues?.includes('merchant') ? ' ⚠ Verify' : ''}
+                Description (Merchant){scanResult._scanIssues?.includes('merchant') ? ' (Verify)' : ''}
               </label>
               <input
                 type="text"
@@ -297,7 +297,7 @@ export default function ReceiptScannerModal({ isOpen, onClose }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={`block text-xs font-medium mb-1 ${scanResult._scanIssues?.includes('amount') ? 'text-amber-400' : 'text-text-muted'}`}>
-                  Amount{scanResult._scanIssues?.includes('amount') ? ' ⚠ Verify' : ''}
+                  Amount{scanResult._scanIssues?.includes('amount') ? ' (Verify)' : ''}
                 </label>
                 <input
                   type="number"

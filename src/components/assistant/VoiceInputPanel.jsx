@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Mic, MicOff, Loader2, CheckCircle2, X, Volume2, Send, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Loader2, CheckCircle2, X, Volume2, Send, Sparkles, AlertCircle } from 'lucide-react';
 import { parseSpokenReceipt, createWebSpeechRecognition, speakTransactionDetails } from '../../services/agents/voiceAgent';
 import { GoogleGenAI } from '@google/genai';
 
@@ -449,7 +449,7 @@ If the year/date is not mentioned, use today's date (${new Date().toISOString().
 
           {parsedData._confidenceIssues?.length > 0 && (
             <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-400">
-              <span className="mt-0.5 shrink-0">⚠️</span>
+              <AlertCircle size={14} className="mt-0.5 shrink-0 text-amber-400" />
               <span>Low confidence on: <strong>{parsedData._confidenceIssues.join(', ')}</strong>. Please review before confirming.</span>
             </div>
           )}

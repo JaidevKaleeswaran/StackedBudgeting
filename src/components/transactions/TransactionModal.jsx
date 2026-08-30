@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { useBudget } from '../../contexts/BudgetContext';
+import { Repeat } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function TransactionModal({ isOpen, onClose, transaction = null }) {
@@ -160,7 +161,7 @@ export default function TransactionModal({ isOpen, onClose, transaction = null }
 
         {formData.isSubscription && (
           <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
-            <span>🔄</span>
+            <Repeat size={14} className="shrink-0" />
             <span>This expense will be tracked as a recurring subscription and counted in your subscription total.</span>
           </div>
         )}

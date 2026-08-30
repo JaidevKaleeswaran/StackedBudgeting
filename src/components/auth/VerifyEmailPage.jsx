@@ -70,7 +70,7 @@ export default function VerifyEmailPage() {
           {/* Spam Prevention & Inbox Tips Box */}
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3.5 space-y-2 text-xs text-amber-300">
             <p className="font-semibold flex items-center gap-1 text-amber-400">
-              📬 Email in Spam / Junk folder?
+              Check your Spam / Junk folder
             </p>
             <p className="text-amber-200/90 leading-relaxed text-[11px]">
               Verification emails from <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">ARCA-support@arca-budgeting.com</code> (or <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">noreply@arca-budgeting.firebaseapp.com</code>) are sometimes flagged by Spam filters (Gmail, Outlook, Yahoo).

@@ -86,7 +86,7 @@ Bad response: "You have $4,200 in income and are saving $50 a month with a $3,00
 Good response: "Your savings rate is a bit thin at around 1% of income — most guidance targets 15-20%. But before ramping up savings, that credit card balance is worth prioritizing: at 22% APR, it's costing you roughly $55/month in interest, more than you're currently saving. It's usually worth paying that down aggressively before building savings beyond a small starter emergency fund (~$500–1,000), since guaranteed 22% "return" from paying off debt beats what savings will earn you."
 
 <user_budget_data>
-📊 SUMMARY:
+SUMMARY:
 • Total Income: $${snapshot.summary.totalIncome}
 • Total Spent (current cycle): $${snapshot.summary.totalSpent}
 • Total Budget Allocated: $${snapshot.summary.totalAllocated}
@@ -96,31 +96,31 @@ Good response: "Your savings rate is a bit thin at around 1% of income — most 
 • Budget Cycle: ${snapshot.summary.cycleFrequency}
 ${snapshot.summary.currentCycleWindow ? `• Cycle Window: ${snapshot.summary.currentCycleWindow.start} to ${snapshot.summary.currentCycleWindow.end}` : ''}
 
-💰 INCOME SOURCES:
+INCOME SOURCES:
 ${snapshot.incomeSources.length > 0
     ? snapshot.incomeSources.map(s => `• ${s.name}: $${s.amount} (${s.frequency})`).join('\n')
     : '• No income sources configured'}
 
-📂 BUDGET CATEGORIES (Current Cycle):
+BUDGET CATEGORIES (Current Cycle):
 ${snapshot.categoryBreakdown.length > 0
     ? snapshot.categoryBreakdown.map(c =>
       `• ${c.name}: Spent $${c.spent.toFixed(2)} of $${c.budgetLimit} limit (${c.status}, $${c.remaining.toFixed(2)} remaining)`
     ).join('\n')
     : '• No categories configured'}
 
-🏪 TOP MERCHANTS BY SPENDING:
+TOP MERCHANTS BY SPENDING:
 ${snapshot.topMerchants.length > 0
     ? snapshot.topMerchants.map((m, i) => `${i + 1}. ${m.name}: $${m.total}`).join('\n')
     : '• No transaction data'}
 
-📋 RECENT TRANSACTIONS (up to 50):
+RECENT TRANSACTIONS (up to 50):
 ${snapshot.recentTransactions.length > 0
     ? snapshot.recentTransactions.map(t =>
       `• ${t.date} | ${t.description} | $${t.amount} | ${t.category}`
     ).join('\n')
     : '• No transactions recorded'}
 
-📈 MONTHLY SPENDING BY CATEGORY:
+MONTHLY SPENDING BY CATEGORY:
 ${Object.keys(snapshot.monthlySpending).length > 0
     ? Object.entries(snapshot.monthlySpending).map(([month, cats]) =>
       `${month}: ${Object.entries(cats).map(([cat, amt]) => `${cat}: $${amt.toFixed(2)}`).join(', ')}`
@@ -282,7 +282,7 @@ ${similarTxs.length > 0 ? similarTxs.join('\n') : '• No prior transactions in 
 
 Possible reasons it was flagged: duplicate within 24h, amount unusually high vs category average, or outlier vs category limit.
 
-Respond in 2 sentences max. Start with either "✅ Looks normal:" or "⚠️ Suspicious:" and then explain your reasoning clearly and concisely.`;
+Respond in 2 sentences max. Start with either "Looks normal:" or "Suspicious:" and then explain your reasoning clearly and concisely.`;
 
   try {
     const ai = getAI();
