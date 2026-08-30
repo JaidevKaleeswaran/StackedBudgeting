@@ -220,16 +220,72 @@ function budgetReducer(state, action) {
         ...state,
         chatMessages: [],
       };
-    case 'SET_FULL_STATE':
+    case 'SET_FULL_STATE': {
+      const incoming = action.payload || {};
+
+      // Merge transactions by id (preserve local transactions & remote transactions)
+      const txMap = new Map();
+      (state?.transactions || []).forEach((tx) => {
+        if (tx?.id) txMap.set(tx.id, tx);
+      });
+      (incoming.transactions || []).forEach((tx) => {
+        if (tx?.id) txMap.set(tx.id, tx);
+      });
+
+      // Merge categories by normalized name
+      const catMap = new Map();
+      (defaultState.categories || []).forEach((cat) => {
+        if (cat?.name) catMap.set(cat.name.trim().toLowerCase(), cat);
+      });
+      (state?.categories || []).forEach((cat) => {
+        if (cat?.name) catMap.set(cat.name.trim().toLowerCase(), cat);
+      });
+      (incoming.categories || []).forEach((cat) => {
+        if (cat?.name) catMap.set(cat.name.trim().toLowerCase(), cat);
+      });
+
+      // Merge income sources by id or name
+      const sourceMap = new Map();
+      (state?.incomeSources || []).forEach((src) => {
+        const key = src?.id || src?.name;
+        if (key) sourceMap.set(key, src);
+      });
+      (incoming.incomeSources || []).forEach((src) => {
+        const key = src?.id || src?.name;
+        if (key) sourceMap.set(key, src);
+      });
+
+      // Merge voice logs
+      const logMap = new Map();
+      (state?.voiceLogs || []).forEach((log) => {
+        const key = log?.id || log?.timestamp;
+        if (key) logMap.set(key, log);
+      });
+      (incoming.voiceLogs || []).forEach((log) => {
+        const key = log?.id || log?.timestamp;
+        if (key) logMap.set(key, log);
+      });
+
+      // Merge chat messages by id
+      const msgMap = new Map();
+      (state?.chatMessages || []).forEach((msg) => {
+        if (msg?.id) msgMap.set(msg.id, msg);
+      });
+      (incoming.chatMessages || []).forEach((msg) => {
+        if (msg?.id) msgMap.set(msg.id, msg);
+      });
+
       return sanitizeState({
         ...defaultState,
-        ...action.payload,
-        categories: action.payload.categories && action.payload.categories.length > 0 ? action.payload.categories : defaultState.categories,
-        transactions: action.payload.transactions || [],
-        incomeSources: action.payload.incomeSources || [],
-        voiceLogs: action.payload.voiceLogs || [],
-        chatMessages: action.payload.chatMessages || [],
+        ...state,
+        ...incoming,
+        categories: Array.from(catMap.values()),
+        transactions: Array.from(txMap.values()),
+        incomeSources: Array.from(sourceMap.values()),
+        voiceLogs: Array.from(logMap.values()),
+        chatMessages: Array.from(msgMap.values()),
       });
+    }
     case 'RESET_STATE':
       return sanitizeState(defaultState);
 
