@@ -13,6 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import VoiceInputPanel from './VoiceInputPanel';
 import ReceiptScannerModal from '../transactions/ReceiptScannerModal';
 import VoiceAuditLogModal from './VoiceAuditLogModal';
+import Reveal from '../ui/Reveal';
 import { toast } from 'react-hot-toast';
 
 // ── Markdown rendering helpers ──────────────────────────────────────────────
@@ -274,6 +275,7 @@ export default function AIAssistantTab() {
         }
       } catch (err) {
         console.warn('[Voice Prompt] Audio transcription error:', err);
+        console.warn('[AI Prompt Voice] Audio transcription error:', err);
       } finally {
         setIsTranscribingPrompt(false);
       }
@@ -298,7 +300,9 @@ export default function AIAssistantTab() {
 
   // Welcome message if chat history is empty
   useEffect(() => {
-    if (messages.length === 0) {
+    const hasWelcome = messages.some((m) => m.id === 'msg_welcome');
+    if (messages.length === 0 && !welcomeDispatchedRef.current && !hasWelcome) {
+      welcomeDispatchedRef.current = true;
       dispatch({
         type: 'ADD_CHAT_MESSAGE',
         payload: {
@@ -310,7 +314,7 @@ export default function AIAssistantTab() {
         }
       });
     }
-  }, [messages.length, budgetState.transactions?.length, budgetState.categories?.length, budgetState.incomeSources?.length, user, dispatch]);
+  }, [messages.length, dispatch]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -447,94 +451,100 @@ export default function AIAssistantTab() {
     <div className="space-y-6 pb-12">
 
       {/* ── Brand header banner ── */}
-      <div className="relative w-full rounded-2xl overflow-hidden border border-border" style={{ background: 'linear-gradient(135deg, rgba(231,185,86,0.12) 0%, rgba(46,91,69,0.18) 50%, rgba(140,109,55,0.15) 100%)' }}>
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-accent/20 border border-accent/30 rounded-xl">
-              <Brain size={22} className="text-accent" />
+      <Reveal delay={0} y={20}>
+        <div className="relative w-full rounded-2xl overflow-hidden border border-border shadow-lg" style={{ background: 'linear-gradient(135deg, rgba(231,185,86,0.12) 0%, rgba(46,91,69,0.18) 50%, rgba(140,109,55,0.15) 100%)' }}>
+          <div className="px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-accent/20 border border-accent/30 rounded-xl">
+                <Brain size={22} className="text-accent" />
+              </div>
+              <div>
+                <p className="text-neon font-bold text-lg tracking-tight leading-none">AI Financial Assistant</p>
+                <p className="text-text-muted text-xs mt-1">Multi-agent · Voice · Vision · Real-time</p>
+              </div>
             </div>
-            <div>
-              <p className="text-neon font-bold text-lg tracking-tight leading-none">AI Financial Assistant</p>
-              <p className="text-text-muted text-xs mt-1">Multi-agent · Voice · Vision · Real-time</p>
-            </div>
+            <span className="text-[10px] bg-[#2e5b45]/20 text-[#3a7056] font-medium px-2.5 py-1 rounded-full border border-[#2e5b45]/30 flex items-center gap-1.5 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3a7056] animate-pulse" />
+              Live
+            </span>
           </div>
-          <span className="text-[10px] bg-[#2e5b45]/20 text-[#3a7056] font-medium px-2.5 py-1 rounded-full border border-[#2e5b45]/30 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3a7056] animate-pulse" />
-            Live
-          </span>
         </div>
-      </div>
+      </Reveal>
 
       {/* Action Header & Tools Bar */}
-      <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-accent/10 rounded-lg text-accent">
-            <Sparkles size={20} />
+      <Reveal delay={0.1} y={24}>
+        <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-md">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 bg-accent/10 rounded-lg text-accent">
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-text flex items-center gap-2">
+                AI Financial Assistant
+                <span className="text-[10px] bg-accent/20 text-accent font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Brain size={10} /> Multi-Agent
+                </span>
+              </h2>
+              <p className="text-xs text-text-muted">Voice, camera, and chat — powered by coordinated AI agents.</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-semibold text-text flex items-center gap-2">
-              AI Financial Assistant
-              <span className="text-[10px] bg-accent/20 text-accent font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Brain size={10} /> Multi-Agent
-              </span>
-            </h2>
-            <p className="text-xs text-text-muted">Voice, camera, and chat — powered by coordinated AI agents.</p>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => { setShowVoicePanel(!showVoicePanel); setShowReceiptScanner(false); }}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${showVoicePanel
+                  ? 'bg-accent/20 text-accent border-accent/40 shadow-sm scale-102'
+                  : 'bg-primary hover:bg-[#2b2924] text-text border-border'
+                }`}
+            >
+              <Mic size={14} />
+              <span>Voice Receipt</span>
+            </button>
+
+            <button
+              onClick={() => { setShowReceiptScanner(true); setShowVoicePanel(false); }}
+              className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-primary hover:bg-[#2b2924] text-text rounded-lg border border-border transition-all duration-200"
+            >
+              <Camera size={14} />
+              <span>Scan Receipt</span>
+            </button>
+
+            <button
+              onClick={() => setShowVoiceAuditLog(true)}
+              className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-[#8c6d37]/15 hover:bg-[#8c6d37]/25 text-[#a48246] rounded-lg border border-[#8c6d37]/30 transition-all duration-200"
+              title="Inspect verbatim user speech transcripts & voice logs"
+            >
+              <ShieldCheck size={14} />
+              <span>Voice Logs ({budgetState.voiceLogs?.length || 0})</span>
+            </button>
+
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-primary hover:bg-[#2b2924] text-text rounded-lg border border-border transition-all duration-200"
+            >
+              <Download size={14} />
+              <span>CSV Export</span>
+            </button>
+
+            <button
+              onClick={() => window.print()}
+              className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-accent/10 hover:bg-accent/20 text-accent rounded-lg border border-accent/20 transition-all duration-200"
+            >
+              <FileText size={14} />
+              <span>PDF Report</span>
+            </button>
           </div>
         </div>
-
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => { setShowVoicePanel(!showVoicePanel); setShowReceiptScanner(false); }}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${showVoicePanel
-                ? 'bg-accent/20 text-accent border-accent/40'
-                : 'bg-primary hover:bg-[#2b2924] text-text border-border'
-              }`}
-          >
-            <Mic size={14} />
-            <span>Voice Receipt</span>
-          </button>
-
-          <button
-            onClick={() => { setShowReceiptScanner(true); setShowVoicePanel(false); }}
-            className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-primary hover:bg-[#2b2924] text-text rounded-lg border border-border transition-colors"
-          >
-            <Camera size={14} />
-            <span>Scan Receipt</span>
-          </button>
-
-          <button
-            onClick={() => setShowVoiceAuditLog(true)}
-            className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-[#8c6d37]/15 hover:bg-[#8c6d37]/25 text-[#a48246] rounded-lg border border-[#8c6d37]/30 transition-colors"
-            title="Inspect verbatim user speech transcripts & voice logs"
-          >
-            <ShieldCheck size={14} />
-            <span>Voice Logs ({budgetState.voiceLogs?.length || 0})</span>
-          </button>
-
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-primary hover:bg-[#2b2924] text-text rounded-lg border border-border transition-colors"
-          >
-            <Download size={14} />
-            <span>CSV Export</span>
-          </button>
-
-          <button
-            onClick={() => window.print()}
-            className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-accent/10 hover:bg-accent/20 text-accent rounded-lg border border-accent/20 transition-colors"
-          >
-            <FileText size={14} />
-            <span>PDF Report</span>
-          </button>
-        </div>
-      </div>
+      </Reveal>
 
       {/* Voice Input Panel */}
       {showVoicePanel && (
-        <VoiceInputPanel
-          onTransactionReady={handleVoiceTransaction}
-          onClose={() => setShowVoicePanel(false)}
-        />
+        <div className="transition-all duration-300 ease-out animate-in fade-in zoom-in-95">
+          <VoiceInputPanel
+            onTransactionReady={handleVoiceTransaction}
+            onClose={() => setShowVoicePanel(false)}
+          />
+        </div>
       )}
 
       {/* Receipt Scanner Modal */}
@@ -550,16 +560,17 @@ export default function AIAssistantTab() {
       />
 
       {/* Main Chat Stream Container */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-6 min-h-[420px] flex flex-col justify-between">
+      <Reveal delay={0.2} y={28}>
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 min-h-[420px] flex flex-col justify-between shadow-xl">
         <div className="space-y-6 overflow-y-auto max-h-[560px] pr-2">
           {messages.map((msg) => (
-            <div key={msg.id} className="space-y-3">
+            <div key={msg.id} className="space-y-3 transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-2">
               {msg.sender === 'user' ? (
                 /* User Message Bubble */
                 <div className="flex justify-end">
-                  <div className={`max-w-lg rounded-2xl rounded-tr-xs px-4 py-3 text-sm ${msg.isVoice
-                      ? 'bg-[#8c6d37]/15 border border-[#8c6d37]/30 text-text'
-                      : 'bg-accent/10 border border-accent/20 text-text'
+                  <div className={`max-w-lg rounded-2xl rounded-tr-xs px-4 py-3 text-sm transition-all duration-200 ${msg.isVoice
+                      ? 'bg-[#8c6d37]/15 border border-[#8c6d37]/30 text-text shadow-sm'
+                      : 'bg-accent/10 border border-accent/20 text-text shadow-sm'
                     }`}>
                     <p className="font-medium">{msg.text}</p>
                     <span className={`text-[10px] block text-right mt-1 ${msg.isVoice ? 'text-[#a48246]' : 'text-accent/60'
@@ -568,11 +579,11 @@ export default function AIAssistantTab() {
                 </div>
               ) : (
                 /* AI Assistant Response Box */
-                <div className="bg-primary border border-border rounded-2xl p-4 sm:p-5 space-y-3">
+                <div className="bg-primary border border-border rounded-2xl p-4 sm:p-5 space-y-3 shadow-md transition-all duration-300 ease-out">
                   {/* Header */}
                   <div className="flex items-center justify-between border-b border-border/80 pb-3">
                     <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center shadow-inner">
                         <Bot size={14} />
                       </div>
                       <span className="text-xs font-semibold text-text">AI Financial Advisor</span>
@@ -595,7 +606,7 @@ export default function AIAssistantTab() {
           ))}
 
           {isProcessing && (
-            <div className="flex items-center space-x-2 text-xs text-text-muted bg-primary p-4 rounded-xl border border-border animate-pulse">
+            <div className="flex items-center space-x-2 text-xs text-text-muted bg-primary p-4 rounded-xl border border-border animate-pulse transition-all duration-300">
               <RefreshCw size={14} className="animate-spin text-accent" />
               <span>Processing through agent pipeline...</span>
             </div>
@@ -606,14 +617,14 @@ export default function AIAssistantTab() {
 
         {/* Quick Questions */}
         {messages.length <= 1 && (
-          <div className="mt-4 pt-3 border-t border-border">
+          <div className="mt-4 pt-3 border-t border-border transition-all duration-500 delay-300 ease-out animate-in fade-in">
             <p className="text-[10px] text-text-muted uppercase tracking-wider font-medium mb-2">Quick Questions</p>
             <div className="flex flex-wrap gap-2">
               {QUICK_QUESTIONS.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => handleSendQuery(q.text)}
-                  className="px-3 py-1.5 text-xs bg-primary hover:bg-[#2b2924] text-zinc-300 hover:text-text rounded-lg border border-border transition-colors"
+                  className="px-3 py-1.5 text-xs bg-primary hover:bg-[#2b2924] text-zinc-300 hover:text-text rounded-lg border border-border transition-all duration-200 hover:scale-102"
                 >
                   <span>{q.text}</span>
                 </button>
@@ -646,7 +657,7 @@ export default function AIAssistantTab() {
         )}
 
         {/* Input Bar */}
-        <div className="mt-4 pt-3 border-t border-border flex items-center space-x-2">
+        <div className="mt-4 pt-3 border-t border-border flex items-center space-x-2 transition-all duration-500 delay-300 ease-out animate-in fade-in">
           {/* Voice prompt mic button */}
           <button
             type="button"
@@ -693,13 +704,14 @@ export default function AIAssistantTab() {
               else handleSendQuery();
             }}
             disabled={(!inputQuery.trim() && !isVoicePrompting) || isProcessing || isTranscribingPrompt}
-            className="bg-accent hover:bg-accent-hover text-primary p-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="bg-accent hover:bg-accent-hover text-primary p-3 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md"
             title="Send prompt to AI"
           >
             <Send size={18} />
           </button>
         </div>
       </div>
+      </Reveal>
     </div>
   );
 }

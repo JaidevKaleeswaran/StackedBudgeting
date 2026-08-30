@@ -73,12 +73,12 @@ export default function VerifyEmailPage() {
               📬 Email in Spam / Junk folder?
             </p>
             <p className="text-amber-200/90 leading-relaxed text-[11px]">
-              Verification emails from <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">noreply@arca-budgeting.firebaseapp.com</code> are sometimes flagged by Spam filters (Gmail, Outlook, Yahoo).
+              Verification emails from <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">ARCA-support@arca-budgeting.com</code> (or <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">noreply@arca-budgeting.firebaseapp.com</code>) are sometimes flagged by Spam filters (Gmail, Outlook, Yahoo).
             </p>
             <ul className="list-disc list-inside text-[11px] text-amber-200/80 space-y-1 pl-1">
               <li>Check your <strong>Spam / Junk / Promotions</strong> folder</li>
               <li>Click <strong>"Not Spam"</strong> in Gmail to move it to your Primary inbox</li>
-              <li>Add <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">noreply@arca-budgeting.firebaseapp.com</code> to your contacts</li>
+              <li>Add <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">ARCA-support@arca-budgeting.com</code> to your contacts</li>
             </ul>
           </div>
 

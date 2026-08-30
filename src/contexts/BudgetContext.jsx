@@ -59,10 +59,17 @@ function sanitizeState(state) {
   };
 }
 
+export function getStorageKey(uid) {
+  if (!uid || uid === 'usr_arca_guest') return 'arca_budget_state_guest';
+  return `arca_budget_state_${uid}`;
+}
+
 // Initial state loaded from localStorage if available
 const getInitialState = () => {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+    const savedKey = localStorage.getItem('arca_last_active_user');
+    const storageKey = getStorageKey(savedKey);
+    const saved = localStorage.getItem(storageKey) || localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       return sanitizeState({
@@ -106,7 +113,7 @@ function budgetReducer(state, action) {
       };
 
       const existingIndex = state.incomeSources.findIndex(
-        (s) => s.isSalary || s.id === 'salary_source' || s.name.toLowerCase() === 'primary salary' || s.name.toLowerCase() === 'salary'
+        (s) => s.isSalary || s.id === 'salary_source' || s.name?.toLowerCase() === 'primary salary' || s.name?.toLowerCase() === 'salary'
       );
 
       let updatedSources;
@@ -123,7 +130,6 @@ function budgetReducer(state, action) {
       };
     }
     case 'SET_CYCLE_CONFIG':
-
       return {
         ...state,
         cycleStartDate: action.payload.cycleStartDate !== undefined ? action.payload.cycleStartDate : state.cycleStartDate,
@@ -143,7 +149,7 @@ function budgetReducer(state, action) {
         ...state,
         categories: state.categories.filter((cat) => cat.id !== action.payload),
       };
-    case 'REPLACE_CATEGORIES': // Used by Quick-Fill (if replacing) or merging (if handled outside)
+    case 'REPLACE_CATEGORIES':
       return sanitizeState({
         ...state,
         categories: action.payload,
@@ -153,7 +159,7 @@ function budgetReducer(state, action) {
         receipt_image_url: null,
         line_items: null,
         source: 'manual',
-        ...action.payload, // caller can override defaults (e.g. source: 'receipt_scan')
+        ...action.payload,
       };
       return { ...state, transactions: [newTx, ...state.transactions] };
     }
@@ -179,11 +185,16 @@ function budgetReducer(state, action) {
         ...state,
         voiceLogs: [],
       };
-    case 'ADD_CHAT_MESSAGE':
+    case 'ADD_CHAT_MESSAGE': {
+      const existingMessages = state.chatMessages || [];
+      if (action.payload?.id && existingMessages.some((msg) => msg.id === action.payload.id)) {
+        return state;
+      }
       return {
         ...state,
-        chatMessages: [...(state.chatMessages || []), action.payload],
+        chatMessages: [...existingMessages, action.payload],
       };
+    }
     case 'CLEAR_CHAT_MESSAGES':
       return {
         ...state,
@@ -191,9 +202,13 @@ function budgetReducer(state, action) {
       };
     case 'SET_FULL_STATE':
       return sanitizeState({
+        ...defaultState,
         ...action.payload,
-        voiceLogs: action.payload.voiceLogs || state?.voiceLogs || [],
-        chatMessages: action.payload.chatMessages || state?.chatMessages || [],
+        categories: action.payload.categories && action.payload.categories.length > 0 ? action.payload.categories : defaultState.categories,
+        transactions: action.payload.transactions || [],
+        incomeSources: action.payload.incomeSources || [],
+        voiceLogs: action.payload.voiceLogs || [],
+        chatMessages: action.payload.chatMessages || [],
       });
     case 'RESET_STATE':
       return sanitizeState(defaultState);
@@ -209,6 +224,9 @@ export function BudgetProvider({ children }) {
   // Sync state to localStorage on changes
   useEffect(() => {
     try {
+      const savedKey = localStorage.getItem('arca_last_active_user');
+      const storageKey = getStorageKey(savedKey);
+      localStorage.setItem(storageKey, JSON.stringify(state));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('Failed to save budget state to localStorage:', e);
