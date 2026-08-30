@@ -85,7 +85,7 @@ export default function TransactionModal({ isOpen, onClose, transaction = null }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm text-text-muted mb-1">Amount ($)</label>
+          <label className="block text-xs font-medium text-text-muted mb-1">Amount</label>
           <input
             type="number"
             name="amount"

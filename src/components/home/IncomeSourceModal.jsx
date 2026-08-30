@@ -84,7 +84,7 @@ export default function IncomeSourceModal({ isOpen, onClose, source = null }) {
         </div>
 
         <div>
-          <label className="block text-sm text-text-muted mb-1">Amount ($)</label>
+          <label className="block text-xs font-medium text-text-muted mb-1">Amount</label>
           <input
             type="number"
             name="amount"

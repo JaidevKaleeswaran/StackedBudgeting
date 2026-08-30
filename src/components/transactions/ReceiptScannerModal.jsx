@@ -296,8 +296,8 @@ export default function ReceiptScannerModal({ isOpen, onClose }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={`block text-sm mb-1 ${scanResult._scanIssues?.includes('amount') ? 'text-amber-400' : 'text-text-muted'}`}>
-                  Amount ($){scanResult._scanIssues?.includes('amount') ? ' ⚠ Verify' : ''}
+                <label className={`block text-xs font-medium mb-1 ${scanResult._scanIssues?.includes('amount') ? 'text-amber-400' : 'text-text-muted'}`}>
+                  Amount{scanResult._scanIssues?.includes('amount') ? ' ⚠ Verify' : ''}
                 </label>
                 <input
                   type="number"

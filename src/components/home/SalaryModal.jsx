@@ -108,9 +108,9 @@ export default function SalaryModal({ isOpen, onClose }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm text-text-muted mb-1 flex items-center gap-1.5">
+            <label className="block text-xs font-medium text-text-muted mb-1 flex items-center gap-1.5 whitespace-nowrap">
               <DollarSign size={14} className="text-text-muted" />
-              Salary Amount ($)
+              Salary Amount
             </label>
             <input
               type="number"

@@ -107,7 +107,7 @@ export default function CategoryModal({ isOpen, onClose, category = null }) {
         </div>
 
         <div>
-          <label className="block text-sm text-text-muted mb-1">Expenditure Limit ($)</label>
+          <label className="block text-xs font-medium text-text-muted mb-1">Budget Limit</label>
           <input
             type="number"
             name="limit"

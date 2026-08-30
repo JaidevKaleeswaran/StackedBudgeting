@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../config/firebase';
+import { auth, db } from '../config/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -331,7 +332,20 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    if (auth) {
+    if (auth && auth.currentUser) {
+      const currentUid = auth.currentUser.uid;
+      try {
+        const userStorageKey = `arca_budget_state_${currentUid}`;
+        const saved = localStorage.getItem(userStorageKey) || localStorage.getItem('arca_budget_state');
+        if (saved && db) {
+          const parsed = JSON.parse(saved);
+          const docRef = doc(db, 'users', currentUid, 'budgetData', 'main');
+          await setDoc(docRef, { ...parsed, updatedAt: new Date().toISOString() }, { merge: true });
+          console.log("Budget data successfully flushed to Firestore before sign-out for user:", currentUid);
+        }
+      } catch (e) {
+        console.warn("Pre-logout save error:", e);
+      }
       try {
         await firebaseSignOut(auth);
       } catch (e) {
@@ -341,7 +355,8 @@ export function AuthProvider({ children }) {
     setUser(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
-      localStorage.clear();
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      localStorage.removeItem('arca_last_active_user');
     } catch (e) { }
   };
 

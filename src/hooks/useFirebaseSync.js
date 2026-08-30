@@ -6,6 +6,7 @@ import { useBudget } from '../contexts/BudgetContext';
 
 export function useFirebaseSync() {
   const { user } = useAuth();
+  const budgetState = useBudget();
   const {
     transactions,
     categories,
@@ -15,24 +16,35 @@ export function useFirebaseSync() {
     voiceLogs,
     chatMessages,
     dispatch
-  } = useBudget();
+  } = budgetState;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const isLocalUpdateRef = useRef(false);
   const saveTimeoutRef = useRef(null);
 
-  // Store current active user id in localStorage for session restoration
+  // Keep a ref to the latest state payload to prevent stale closure issues
+  const stateRef = useRef();
+  stateRef.current = {
+    transactions,
+    categories,
+    incomeSources,
+    cycleStartDate,
+    cycleFrequency,
+    voiceLogs: voiceLogs || [],
+    chatMessages: chatMessages || [],
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Store active user UID and sync to user-scoped localStorage
   useEffect(() => {
-    if (user && user.uid) {
+    if (user && user.uid && !user.isGuest) {
       try {
         localStorage.setItem('arca_last_active_user', user.uid);
-      } catch (e) { }
-    } else {
-      try {
-        localStorage.removeItem('arca_last_active_user');
+        const userStorageKey = `arca_budget_state_${user.uid}`;
+        localStorage.setItem(userStorageKey, JSON.stringify(stateRef.current));
       } catch (e) { }
     }
-  }, [user?.uid]);
+  }, [user?.uid, transactions, categories, incomeSources, cycleStartDate, cycleFrequency, voiceLogs, chatMessages]);
 
   // 1. Realtime Firestore listener: Sync data from Firestore to local state across all devices
   useEffect(() => {
@@ -57,18 +69,8 @@ export function useFirebaseSync() {
         } else {
           // If no document exists in Firestore yet for this logged in user, initialize Firestore doc from current state
           try {
-            const initialState = {
-              transactions: transactions || [],
-              categories: categories || [],
-              incomeSources: incomeSources || [],
-              cycleStartDate: cycleStartDate || null,
-              cycleFrequency: cycleFrequency || 'monthly',
-              voiceLogs: voiceLogs || [],
-              chatMessages: chatMessages || [],
-              updatedAt: new Date().toISOString(),
-            };
             isLocalUpdateRef.current = true;
-            await setDoc(docRef, initialState, { merge: true });
+            await setDoc(docRef, stateRef.current, { merge: true });
             console.log("Initialized new Firestore budget document for user:", user.uid);
           } catch (e) {
             console.error("Error creating initial Firestore budget document:", e);
@@ -95,28 +97,18 @@ export function useFirebaseSync() {
     }
   }, [user, dispatch]);
 
-  // 2. Sync local changes back to Firestore (debounced + immediate flush on unmount)
+  // 2. Sync local changes back to Firestore (debounced save using latest stateRef)
   useEffect(() => {
     if (!isHydrated || !user || user.isGuest || !db) return;
 
-    const stateToSave = {
-      transactions,
-      categories,
-      incomeSources,
-      cycleStartDate,
-      cycleFrequency,
-      voiceLogs: voiceLogs || [],
-      chatMessages: chatMessages || [],
-      updatedAt: new Date().toISOString(),
-    };
-
-    // Helper to perform the save to Firestore
+    // Helper to perform the save to Firestore using the freshest stateRef
     const performSave = async () => {
+      if (!user || !user.uid || user.isGuest) return;
       try {
         isLocalUpdateRef.current = true;
         const docRef = doc(db, 'users', user.uid, 'budgetData', 'main');
-        await setDoc(docRef, stateToSave, { merge: true });
-        console.log("Budget data synced to Firestore across devices.");
+        await setDoc(docRef, stateRef.current, { merge: true });
+        console.log("Budget data synced to Firestore across devices for user:", user.uid);
       } catch (error) {
         console.error("Error syncing budget data to Firestore:", error);
       }
@@ -129,7 +121,7 @@ export function useFirebaseSync() {
 
     saveTimeoutRef.current = setTimeout(performSave, 500);
 
-    // Flush pending save immediately on unmount or before user logs out
+    // Flush pending save immediately on unmount
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
