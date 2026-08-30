@@ -82,7 +82,7 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
+    <>
       <Toaster
         position="bottom-right"
         toastOptions={{
@@ -100,6 +100,6 @@ export default function App() {
         }}
       />
       <MainApp />
-    </AuthProvider>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useReducer, useContext, useEffect } from 'react';
 import { normalizeToMasterCycle, getCycleWindow, isWithinCycle } from '../utils/cycleUtils';
+import { useAuth } from './AuthContext';
 
 const STORAGE_KEY = 'arca_budget_state';
 const LEGACY_STORAGE_KEY = 'stacked_budget_state';
@@ -296,18 +297,39 @@ function budgetReducer(state, action) {
 
 export function BudgetProvider({ children }) {
   const [state, dispatch] = useReducer(budgetReducer, null, getInitialState);
+  const { user } = useAuth();
+
+  // Load user-specific cached budget state from localStorage when active user logs in
+  useEffect(() => {
+    if (user && user.uid && !user.isGuest) {
+      try {
+        const userStorageKey = `arca_budget_state_${user.uid}`;
+        const saved = localStorage.getItem(userStorageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          dispatch({ type: 'SET_FULL_STATE', payload: parsed });
+        }
+      } catch (e) {
+        console.warn('Failed to load user state from localStorage:', e);
+      }
+    }
+  }, [user?.uid]);
 
   // Sync state to localStorage on changes
   useEffect(() => {
     try {
-      const savedKey = localStorage.getItem('arca_last_active_user');
-      const storageKey = getStorageKey(savedKey);
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      if (user && user.uid && !user.isGuest) {
+        const userStorageKey = `arca_budget_state_${user.uid}`;
+        localStorage.setItem(userStorageKey, JSON.stringify(state));
+        localStorage.setItem('arca_last_active_user', user.uid);
+      } else {
+        localStorage.setItem('arca_budget_state_guest', JSON.stringify(state));
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('Failed to save budget state to localStorage:', e);
     }
-  }, [state]);
+  }, [state, user]);
 
   // Calculate normalized total income
   const totalIncome = state.incomeSources.reduce((sum, source) => {
