@@ -108,24 +108,23 @@ export function useFirebaseSync() {
         isLocalUpdateRef.current = true;
         const docRef = doc(db, 'users', user.uid, 'budgetData', 'main');
         await setDoc(docRef, stateRef.current, { merge: true });
-        console.log("Budget data synced to Firestore across devices for user:", user.uid);
+        console.log("Budget data synced to Firestore for user:", user.uid);
       } catch (error) {
         console.error("Error syncing budget data to Firestore:", error);
       }
     };
 
-    // Debounce save by 500ms
+    // Debounce save by 400ms
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    saveTimeoutRef.current = setTimeout(performSave, 500);
+    saveTimeoutRef.current = setTimeout(performSave, 400);
 
-    // Flush pending save immediately on unmount
+    // Clean up timer on next state change or unmount
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
-        performSave();
       }
     };
   }, [
@@ -136,7 +135,7 @@ export function useFirebaseSync() {
     cycleFrequency,
     voiceLogs,
     chatMessages,
-    user,
+    user?.uid,
     isHydrated
   ]);
 }
