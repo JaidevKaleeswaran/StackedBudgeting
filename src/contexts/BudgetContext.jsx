@@ -52,10 +52,30 @@ function sanitizeState(state) {
     });
   }
 
+  let cleanedMessages = state.chatMessages || [];
+  if (Array.isArray(state.chatMessages)) {
+    const seenMsgIds = new Set();
+    let welcomeSeen = false;
+    cleanedMessages = [];
+    for (const msg of state.chatMessages) {
+      if (!msg) continue;
+      const isWelcome = msg.id === 'msg_welcome' || (msg.text && msg.text.includes("AI Financial Assistant"));
+      if (isWelcome) {
+        if (welcomeSeen) continue;
+        welcomeSeen = true;
+      } else if (msg.id) {
+        if (seenMsgIds.has(msg.id)) continue;
+        seenMsgIds.add(msg.id);
+      }
+      cleanedMessages.push(msg);
+    }
+  }
+
   return {
     ...state,
     categories: cleanedCategories,
     transactions: cleanedTransactions,
+    chatMessages: cleanedMessages,
   };
 }
 

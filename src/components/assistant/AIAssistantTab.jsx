@@ -156,6 +156,8 @@ export default function AIAssistantTab() {
   const promptMediaRecorderRef = useRef(null);
   const promptAudioChunksRef = useRef([]);
   const promptRecognitionRef = useRef(null);
+  const welcomeDispatchedRef = useRef(false);
+  const hasUserSubmittedRef = useRef(false);
 
   const handleStartPromptVoice = async () => {
     setIsVoicePrompting(true);
@@ -300,7 +302,7 @@ export default function AIAssistantTab() {
 
   // Welcome message if chat history is empty
   useEffect(() => {
-    const hasWelcome = messages.some((m) => m.id === 'msg_welcome');
+    const hasWelcome = messages.some((m) => m.id === 'msg_welcome' || m.text?.includes("AI Financial Assistant"));
     if (messages.length === 0 && !welcomeDispatchedRef.current && !hasWelcome) {
       welcomeDispatchedRef.current = true;
       dispatch({
@@ -316,8 +318,11 @@ export default function AIAssistantTab() {
     }
   }, [messages.length, dispatch]);
 
+  // Smooth scroll to bottom ONLY when user actively sends a message or receives an AI answer
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (hasUserSubmittedRef.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages.length, isProcessing]);
 
   // ── Handle text question ────────────────────────────────────────────────
@@ -326,6 +331,7 @@ export default function AIAssistantTab() {
     const query = (queryToRun || inputQuery).trim();
     if (!query || isProcessing) return;
 
+    hasUserSubmittedRef.current = true;
     setInputQuery('');
     const userMsgId = `user_${Date.now()}`;
     const userMsg = {
@@ -374,6 +380,7 @@ export default function AIAssistantTab() {
   // ── Handle voice receipt ────────────────────────────────────────────────
 
   const handleVoiceTransaction = async (parsedData) => {
+    hasUserSubmittedRef.current = true;
     setShowVoicePanel(false);
 
     const voiceMsg = {
